@@ -87,12 +87,6 @@ const Ray = function() {
   });
 }
 
-const test = Ray();
-
-test[2] = 3;
-console.log(test);
-console.log(test.keys);
-
 module.exports = {
   Ray,
 }
