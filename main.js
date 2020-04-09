@@ -3,6 +3,7 @@
  *
  * FEATURES:
  * - All goals and stretch goals of assignment.
+ * - Array can be initialized by providing an array or object to Ray().
  * - .length is automatically updated when new elements are added to array in .push()
  *   and .unshift().  The functions don't have to manage .length themselves.
  * - .length is automatically updated if you add new elements with bracket notation.
@@ -18,8 +19,8 @@
  */
 
 // Set up internal array object to be handled by proxy
-const _Ray = function() {
-    return {
+const _Ray = function(arr) {
+    const out = {
     length: 0,
 
     push: function(value) {
@@ -53,7 +54,7 @@ const _Ray = function() {
     // Length of list isn't always equal to .length.  Deleted elements stay as undefined
     // but aren't listed here.  This copies real array behavior.
     get keys() {
-      const methods = ['length', 'push', 'pop', 'unshift', 'shift'];
+      const methods = ['length', 'push', 'pop', 'unshift', 'shift', 'includes', 'indexOf', 'reverse', 'slice', 'map', 'filter', 'forEach', 'concat', 'find', 'findIndex', 'every', 'some'];
       return Object.keys(this).filter(item => (!methods.includes(item) && item != "keys")).sort(function(a, b) {
         // Sort by numeric vs alphabetic
         let out = isNaN(a) - isNaN(b);
@@ -70,13 +71,168 @@ const _Ray = function() {
           return 0;
         }
       });
+    },
+
+    // Stretch goals below
+
+    includes: function(item) {
+      for(member of this.keys) {
+        if(this[member] == item) {
+          return true;
+        }
+      }
+      return false;
+    },
+
+    indexOf: function(item) {
+      for(member of this.keys) {
+        if(this[member] == item) {
+          return member;
+        }
+      }
+      return -1;
+    },
+
+    reverse: function() {
+      console.log("Keys: " + this.keys);
+      for(let i = 0, j = this.length - 1; i < j; i++, j--) {
+        const tmp = this[i];
+        this[i] = this[j];
+        this[j] = tmp;
+      }
+    },
+
+    slice: function(from = 0, to = "end") {
+      const out = Ray();
+      if(to == "end") {
+        to = this.length;
+      } else if(to < 1) {
+        to = this.length + to;
+      }
+
+      for(let i = from; i < to; i++) {
+        out.push(this[i]);
+      }
+      return out;
+    },
+
+    map: function(func, thisValue = undefined) {
+      const out = Ray();
+
+      for(let i = 0; i < this.length; i++) {
+        out[i] = func(this[i], i, this, thisValue);
+      }
+      console.log(typeof out);
+      return out;
+    },
+
+    filter: function(func, thisValue = undefined) {
+      const out = Ray();
+
+      for(let i = 0; i < this.length; i++) {
+        if(func(this[i], i, this, thisValue)) {
+          out.push(this[i]);
+        }
+      }
+      return out;
+    },
+
+    forEach: function(func, thisValue = undefined) {
+      const out = Ray();
+
+      for(let i = 0; i < this.length; i++) {
+        if(this[i] != undefined) {
+          func(this[i], i, this, thisValue);
+        }
+      }
+    },
+
+    concat: function(array2) {
+      const out = Ray();
+
+      for(let i = 0; i < this.length; i++) {
+        out.push(this[i]);
+      }
+
+      for(let i = 0; i < array2.length; i++) {
+        out.push(array2[i]);
+      }
+
+      return out;
+    },
+
+    find: function(func, thisValue = undefined) {
+      const out = Ray();
+
+      for(let i = 0; i < this.length; i++) {
+        if(this[i] != undefined) {
+          if(func(this[i], i, this, thisValue)) {
+            return this[i];
+          }
+        }
+      }
+
+      return undefined;
+    },
+
+    findIndex: function(func, thisValue = undefined) {
+      const out = Ray();
+
+      for(let i = 0; i < this.length; i++) {
+        if(this[i] != undefined) {
+          if(func(this[i], i, this, thisValue)) {
+            return i;
+          }
+        }
+      }
+
+      return -1;
+    },
+
+    every: function(func, thisValue = undefined) {
+      const out = Ray();
+
+      for(let i = 0; i < this.length; i++) {
+        if(this[i] != undefined) {
+          if(!func(this[i], i, this, thisValue)) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    },
+
+    some: function(func, thisValue = undefined) {
+      const out = Ray();
+
+      for(let i = 0; i < this.length; i++) {
+        if(this[i] != undefined) {
+          if(func(this[i], i, this, thisValue)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
     }
   };
+
+  // Initialize array if array was provided
+  if(arr != undefined) {
+    let len = 0;
+    for(key in arr) {
+      out[key] = arr[key];
+      len++;
+    }
+    out.length = len;
+  }
+  return out;
 }
 
 // Create user-facing array object with proxy handler
-const Ray = function() {
-  return new Proxy(_Ray(), {
+const Ray = function(arr) {
+  return new Proxy(_Ray(arr), {
     // Getter
     get: function(object, property) {
       return object[property];
