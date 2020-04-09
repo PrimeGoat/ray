@@ -120,11 +120,9 @@ const Ray = function(arr = []) {
       }
     },
   
-    slice: function(from = 0, to = "end") {
+    slice: function(from = 0, to = this.length) {
       const out = Ray();
-      if(to == "end") {
-        to = this.length;
-      } else if(to < 1) {
+      if(to < 1) {
         to = this.length + to;
       }
   
