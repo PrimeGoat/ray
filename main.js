@@ -1,4 +1,23 @@
-// Set up internal array object to be handled
+/* Custom array implementation by Denis Savgir
+ * A bunch of extra features have been added that replicate the behavior of real arrays.
+ *
+ * FEATURES:
+ * - All goals and stretch goals of assignment.
+ * - .length is automatically updated when new elements are added to array in .push()
+ *   and .unshift().  The functions don't have to manage .length themselves.
+ * - .length is automatically updated if you add new elements with bracket notation.
+ *   For example, if you have a blank array and give a value to [20], .length automatically
+ *   becomes 21.
+ * - If you delete non-numeric members, .length is decremented.  If you delete numeric
+ *   members, .length stays the same, just like in real arrays.
+ * - Array is automatically truncated if you change .length attribute.
+ * - New .keys attribute that contains a list of array's indices.  The indices are sorted
+ *   as numerically-sorted numerics followed by alphabetically-sorted non-numerics.
+ * - Object.keys() returns only array indices, excludes methods.
+ * 
+ */
+
+// Set up internal array object to be handled by proxy
 const _Ray = function() {
     return {
     length: 0,
@@ -34,13 +53,23 @@ const _Ray = function() {
     // Length of list isn't always equal to .length.  Deleted elements stay as undefined
     // but aren't listed here.  This copies real array behavior.
     get keys() {
-      let out = [];
-      for(key in this) {
-        if(!isNaN(key) && this[key] != undefined) {
-          out.push(key);
+      const methods = ['length', 'push', 'pop', 'unshift', 'shift'];
+      return Object.keys(this).filter(item => (!methods.includes(item) && item != "keys")).sort(function(a, b) {
+        // Sort by numeric vs alphabetic
+        let out = isNaN(a) - isNaN(b);
+        if(out != 0) {
+          return out;
         }
-      }
-      return out;
+
+        // Subsort by either lexicographical or numerical
+        if(a < b) {
+          return -1;
+        } else if(b < a) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
     }
   };
 }
@@ -76,16 +105,21 @@ const Ray = function() {
     },
 
     deleteProperty: function(target, property) {
-      console.log("Deleter!");
       if(!isNaN(property)) {
         target[property] = undefined;
       } else {
         delete target[property];
         return true;
       }
+    },
+
+    // Hide all keys other than what an array would show (numerics and members)
+    ownKeys: function(target) {
+      return target.keys;
     }
   });
 }
+
 
 module.exports = {
   Ray,
