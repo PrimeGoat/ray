@@ -15,6 +15,7 @@
  * - New .keys attribute that contains a list of array's indices.  The indices are sorted
  *   as numerically-sorted numerics followed by alphabetically-sorted non-numerics.
  * - Object.keys() returns only array indices, excludes methods.
+ * - .Array() returns the contents as an Array object.
  * 
  */
 
@@ -54,7 +55,7 @@ const _Ray = function(arr) {
     // Length of list isn't always equal to .length.  Deleted elements stay as undefined
     // but aren't listed here.  This copies real array behavior.
     get keys() {
-      const methods = ['length', 'push', 'pop', 'unshift', 'shift', 'includes', 'indexOf', 'reverse', 'slice', 'map', 'filter', 'forEach', 'concat', 'find', 'findIndex', 'every', 'some'];
+      const methods = ['length', 'push', 'pop', 'unshift', 'shift', 'Array', 'includes', 'indexOf', 'reverse', 'slice', 'map', 'filter', 'forEach', 'concat', 'find', 'findIndex', 'every', 'some'];
       return Object.keys(this).filter(item => (!methods.includes(item) && item != "keys")).sort(function(a, b) {
         // Sort by numeric vs alphabetic
         let out = isNaN(a) - isNaN(b);
@@ -71,6 +72,17 @@ const _Ray = function(arr) {
           return 0;
         }
       });
+    },
+
+    // Returns contents as an Array object
+    Array: function() {
+      const out = new Array();
+
+      for(key in this) {
+        out.push(this[key]);
+      }
+
+      return out;
     },
 
     // Stretch goals below
@@ -235,6 +247,7 @@ const Ray = function(arr) {
   return new Proxy(_Ray(arr), {
     // Getter
     get: function(object, property) {
+      //console.log("property: " + property)
       return object[property];
     },
 
